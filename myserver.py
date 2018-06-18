@@ -94,4 +94,4 @@ api.add_resource(Events, '/users/<userID>/events')
 api.add_resource(EventID, '/users/<userID>/events/<eventID>')
 
 if __name__ == '__main__':
-     app.run()
+     app.run(host="192.168.0.104",port=6666)
