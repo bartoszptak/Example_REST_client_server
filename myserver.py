@@ -11,9 +11,10 @@ api = Api(app)
 class Users(Resource):
     def get(self):
         conn = db_connect.connect()
-        query = conn.execute("select u.name, u.name from Users u")
-        return {'users': [i[0] for i in query.cursor.fetchall()]}
-    
+        query = conn.execute("select userID,name from Users")
+        result = {'users': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
+        return jsonify(result)
+
     def post(self):
         conn = db_connect.connect()
         print(request.json)
@@ -24,17 +25,32 @@ class Users(Resource):
         query = conn.execute("insert into Users values(null,'{0}','{1}','{2}')".format(name,mail,date))
         return {'status':'success'}
 
-class UsersID(Resource):
+class UserID(Resource):
     def get(self, userID):
         conn = db_connect.connect()
         query = conn.execute("select * from Users where UserId =%d "  %int(userID))
         result = {'user': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
         return jsonify(result)
 
+    def put(self, userID):
+        conn = db_connect.connect()
+        print(request.json)
+        name = request.json['name']
+        mail = request.json['mail']
+        query = conn.execute("update Users set name ='%s', mail='%s' where userID=%d" %(str(name),str(mail),int(userID)))
+        return {'status': 'success'}
+
+    def delete(self, userID):
+        conn = db_connect.connect()
+        query = conn.execute("delete from Users where UserID =%d" % (int(userID)))
+        query = conn.execute("delete from Events where UserId =%d" % (int(userID)))
+        query = conn.execute("delete from Stickers where UserId =%d" %(int(userID)))
+        return {'status':'success'}
+
 class Stickers(Resource):
     def get(self, userID):
         conn = db_connect.connect()
-        query = conn.execute("select * from Stickers where UserId =%d "  %int(userID))
+        query = conn.execute("select stickerID,tittle from Stickers where UserId =%d "  %int(userID))
         result = {'stickers': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
         return jsonify(result)
 
@@ -53,6 +69,15 @@ class StickerID(Resource):
         query = conn.execute("select * from Stickers where UserId =%d and stickerID=%d"  %(int(userID),int(stickerID)))
         result = {'sticker': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
         return jsonify(result)   
+
+    def put(self, userID, stickerID):
+        conn = db_connect.connect()
+        print(request.json)
+        title = request.json['title']
+        text = request.json['text']
+        color = request.json['color']
+        query = conn.execute("update Stickers set tittle ='%s', text='%s', colorID=%d where userID=%d and stickerID=%d" %(str(title),str(text),int(color),int(userID),int(stickerID)))
+        return {'status': 'success'}
 
     def delete(self, userID, stickerID):
         conn = db_connect.connect()
@@ -79,7 +104,15 @@ class EventID(Resource):
         conn = db_connect.connect()
         query = conn.execute("select * from Events where UserId =%d and eventsID=%d"  %(int(userID),int(eventID)))
         result = {'event': [dict(zip(tuple (query.keys()) ,i)) for i in query.cursor]}
-        return jsonify(result)   
+        return jsonify(result)
+
+    def put(self, userID, eventID):
+        conn = db_connect.connect()
+        print(request.json)
+        title = request.json['title']
+        time = request.json['time']
+        query = conn.execute("update Events set title ='%s', time='%s' where userID=%d and eventsID=%d" %(str(title),str(time),int(userID),int(eventID)))
+        return {'status': 'success'}
 
     def delete(self, userID, eventID):
         conn = db_connect.connect()
@@ -87,11 +120,11 @@ class EventID(Resource):
         return {'status':'success'}
 
 api.add_resource(Users, '/users')
-api.add_resource(UsersID, '/users/<userID>')
+api.add_resource(UserID, '/users/<userID>')
 api.add_resource(Stickers, '/users/<userID>/stickers')
 api.add_resource(StickerID, '/users/<userID>/stickers/<stickerID>')
 api.add_resource(Events, '/users/<userID>/events')
 api.add_resource(EventID, '/users/<userID>/events/<eventID>')
 
 if __name__ == '__main__':
-     app.run(host="192.168.0.104",port=6666)
+     app.run(host="127.0.0.1",port=5000)
