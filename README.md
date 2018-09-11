@@ -1,2 +1,2 @@
 # OrganizerREST
-Simple organizer: events, stickers client and rest-ful server on flask
+My example rest-ful client-server on flask
